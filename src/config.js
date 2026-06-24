@@ -12,7 +12,8 @@ const CONFIG = {
       name: "The Moon",
       description: "Earth's only natural satellite — humanity's first colony.",
       travelTime: 60, // seconds
-      // tutorial-moon.CONFIG.1 — Starting resource values
+      // tutorial-moon.RES.6 — Starting resource values
+      // tutorial-moon.POP.1 — 500 starting colonists
       startingResources: {
         steel: 10000,
         aluminum: 5000,
@@ -24,43 +25,80 @@ const CONFIG = {
         energy: 10000,
         fuel: 4000,
       },
-      // tutorial-moon.RES.7 — Consumption rates during travel (per second)
+      // tutorial-moon.POP.1 — Starting population
+      startingPopulation: 500,
+      // tutorial-moon.RES.7 — Per-capita consumption rates (per colonist per tick)
+      // Food and Water scale with population. Energy and Fuel are flat.
       consumptionPerSecond: {
-        water: 2,
-        food: 1,
-        energy: 3,
-        fuel: 1,
+        water: { type: "perCapita", rate: 1 },
+        food: { type: "perCapita", rate: 1 },
+        energy: { type: "flat", rate: 3 },
+        fuel: { type: "flat", rate: 1 },
       },
     },
   },
 
-  // Extension points for future destinations (tutorial-moon.EXT.1, tutorial-moon.EXT.2)
-  // Add new destinations here following the same structure.
-  // Future fields per destination:
-  //   population: { starting: 0, capacity: 1000 }
-  //   morale: { starting: 50, decay: 0.1 }
-  //   research: { points: 0, perTick: 0 }
+  // tutorial-moon.POP.1 — Population configuration
+  POPULATION: {
+    initial: 500,
+    // Extension: maxPopulation: 1000,
+    // Extension: growthRate: 0.001,
+  },
+
+  // tutorial-moon.MORALE.1 — Morale system bounds
+  // tutorial-moon.MORALE.2 — Starts at 100
+  MORALE: {
+    initial: 100,
+    max: 100,
+    min: -100,
+    // tutorial-moon.MORALE.3 — Decay when food projections fail
+    decayIntervalTicks: 10,     // ticks between morale decay ticks
+    decayAmount: 1,
+    // tutorial-moon.MORALE.3 — Halfway check (proportion of journey)
+    halfWayFraction: 0.5,
+  },
+
+  // tutorial-moon.BUILD.2 — Farm building
+  // tutorial-moon.BUILD.3 — Costs Steel and Aluminum
+  // tutorial-moon.BUILD.4 — Consumes Nitrogen, Energy, Water, produces Food
+  BUILDINGS: {
+    farm: {
+      name: "Farm",
+      description: "Grows food for the colony. Consumes Nitrogen, Energy, and Water.",
+      cost: { steel: 500, aluminum: 200 },
+      // tutorial-moon.BUILD.4 — Inputs per tick per farm
+      inputsPerTick: { nitrogen: 5, energy: 10, water: 20 },
+      // tutorial-moon.BUILD.5 — Food produced per tick per farm
+      foodPerTick: 250,
+    },
+    // Extension: more buildings
+    // waterRecycler: { ... }
+    // solarPanel: { ... }
+  },
+
+  // Extension points for future systems (tutorial-moon.EXT.1)
+  // LABOR: { occupations: {}, efficiency: {} },
+  // RESEARCH: { pointsPerTick: 0, techTree: [] },
+  // POLITICS: { initialPoints: 0, edicts: [] },
+  // EVENTS: { pool: [], checkInterval: 10, baseChance: 0.1 },
+  // COLONIES: { list: [] },
 
   // tutorial-moon.RES.1 — Resource display groups
   RESOURCE_GROUPS: {
     materials: {
-      label: "Materials",
-      icon: "⛏️",
+      label: "Materials", icon: "⛏️",
       resources: ["steel", "aluminum", "preciousMetals"],
     },
     volatiles: {
-      label: "Volatiles",
-      icon: "💧",
+      label: "Volatiles", icon: "💧",
       resources: ["water", "hydrogen", "nitrogen"],
     },
     consumables: {
-      label: "Consumables",
-      icon: "🍲",
+      label: "Consumables", icon: "🍲",
       resources: ["food"],
     },
     power: {
-      label: "Power",
-      icon: "⚡",
+      label: "Power", icon: "⚡",
       resources: ["energy", "fuel"],
     },
   },
@@ -77,44 +115,4 @@ const CONFIG = {
     energy:        { label: "Energy",          icon: "⚡", decimals: 0 },
     fuel:          { label: "Fuel",            icon: "⛽", decimals: 0 },
   },
-
-  // Extension points for future systems (tutorial-moon.EXT.1)
-  // Uncomment and extend when implementing:
-  //
-  // POPULATION: {
-  //   maxPopulation: 1000,
-  //   initialPopulation: 0,
-  //   growthRate: 0.01,       // per tick
-  //   birthRate: 0.001,
-  //   deathRate: 0.0005,
-  // },
-  //
-  // MORALE: {
-  //   initial: 50,
-  //   max: 100,
-  //   decayPerTick: 0.02,
-  //   // Affects: production efficiency, population growth, event frequency
-  // },
-  //
-  // RESEARCH: {
-  //   pointsPerTick: 0,
-  //   techTree: [],            // Array of technology objects
-  // },
-  //
-  // POLITICS: {
-  //   initialPoints: 0,
-  //   pointsPerTick: 0,
-  //   edicts: [],              // Available policy decisions
-  // },
-  //
-  // EVENTS: {
-  //   pool: [],                // Random event definitions
-  //   checkInterval: 10,       // ticks between event checks
-  //   baseChance: 0.1,        // base probability per check
-  // },
-  //
-  // COLONIES: {
-  //   list: [],                // Array of colony objects (extends DESTINATIONS)
-  //   // Each colony: { id, name, resources, population, buildings, ... }
-  // },
 };

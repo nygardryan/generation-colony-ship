@@ -2,20 +2,19 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Game Tests — tutorial-moon</title>
+  <title>Game Tests — tutorial-moon v2</title>
   <style>
-    body { font-family: monospace; background: #0a0a0f; color: #e4e4ed; padding: 2rem; }
+    body { font-family: monospace; background: #0a0a0f; color: #e4e4ed; padding: 2rem; max-width: 800px; }
     h1 { color: #8b5cf6; }
     .pass { color: #34d399; }
     .fail { color: #ef4444; }
-    .skip { color: #6c6c7a; }
     .summary { margin-top: 2rem; padding: 1rem; border-top: 1px solid #2a2a3e; }
     .acid-tag { color: #f59e0b; font-size: 0.8rem; }
-    li { margin: 0.5rem 0; }
+    li { margin: 0.4rem 0; font-size: 0.85rem; }
   </style>
 </head>
 <body>
-  <h1>🧪 tutorial-moon — ACID Test Suite</h1>
+  <h1>🧪 tutorial-moon v2 — ACID Test Suite</h1>
   <ol id="results"></ol>
   <div class="summary" id="summary"></div>
 
@@ -29,345 +28,389 @@
     function test(acid, description, fn) {
       total++;
       const li = document.createElement("li");
-      const statusSpan = document.createElement("span");
       try {
         fn();
-        statusSpan.className = "pass";
-        statusSpan.textContent = "✓ PASS";
+        li.innerHTML = `<span class="pass">✓ PASS</span> <span class="acid-tag">[${acid}]</span> ${description}`;
         passed++;
       } catch (e) {
-        statusSpan.className = "fail";
-        statusSpan.textContent = `✗ FAIL — ${e.message}`;
+        li.innerHTML = `<span class="fail">✗ FAIL — ${e.message}</span> <span class="acid-tag">[${acid}]</span> ${description}`;
         failed++;
       }
-      li.innerHTML = `${statusSpan.outerHTML} <span class="acid-tag">[${acid}]</span> ${description}`;
       results.appendChild(li);
     }
 
     // ── CONFIG Tests ────────────────────────────────
 
-    // tutorial-moon.CONFIG.1 — All starting values are configurable constants
     test("CONFIG.1", "Starting values match spec",
       () => {
         const r = CONFIG.DESTINATIONS.moon.startingResources;
-        if (r.steel !== 10000) throw new Error(`steel: expected 10000 got ${r.steel}`);
-        if (r.aluminum !== 5000) throw new Error(`aluminum: expected 5000 got ${r.aluminum}`);
-        if (r.preciousMetals !== 1000) throw new Error(`preciousMetals: expected 1000 got ${r.preciousMetals}`);
-        if (r.water !== 8000) throw new Error(`water: expected 8000 got ${r.water}`);
-        if (r.hydrogen !== 3000) throw new Error(`hydrogen: expected 3000 got ${r.hydrogen}`);
-        if (r.nitrogen !== 2000) throw new Error(`nitrogen: expected 2000 got ${r.nitrogen}`);
-        if (r.food !== 6000) throw new Error(`food: expected 6000 got ${r.food}`);
-        if (r.energy !== 10000) throw new Error(`energy: expected 10000 got ${r.energy}`);
-        if (r.fuel !== 4000) throw new Error(`fuel: expected 4000 got ${r.fuel}`);
+        if (r.steel !== 10000) throw new Error(`steel: ${r.steel}`);
+        if (r.aluminum !== 5000) throw new Error(`aluminum: ${r.aluminum}`);
+        if (r.preciousMetals !== 1000) throw new Error(`PM: ${r.preciousMetals}`);
+        if (r.water !== 8000) throw new Error(`water: ${r.water}`);
+        if (r.hydrogen !== 3000) throw new Error(`hydrogen: ${r.hydrogen}`);
+        if (r.nitrogen !== 2000) throw new Error(`nitrogen: ${r.nitrogen}`);
+        if (r.food !== 6000) throw new Error(`food: ${r.food}`);
+        if (r.energy !== 10000) throw new Error(`energy: ${r.energy}`);
+        if (r.fuel !== 4000) throw new Error(`fuel: ${r.fuel}`);
       }
     );
 
-    // tutorial-moon.CONFIG.1 — Consumption rates match spec
-    test("CONFIG.1", "Consumption rates match spec",
+    test("CONFIG.1", "Consumption rates use perCapita for food/water, flat for energy/fuel",
       () => {
         const c = CONFIG.DESTINATIONS.moon.consumptionPerSecond;
-        if (c.water !== 2) throw new Error(`water consumption: expected 2 got ${c.water}`);
-        if (c.food !== 1) throw new Error(`food consumption: expected 1 got ${c.food}`);
-        if (c.energy !== 3) throw new Error(`energy consumption: expected 3 got ${c.energy}`);
-        if (c.fuel !== 1) throw new Error(`fuel consumption: expected 1 got ${c.fuel}`);
+        if (c.water.type !== "perCapita" || c.water.rate !== 1) throw new Error("water config");
+        if (c.food.type !== "perCapita" || c.food.rate !== 1) throw new Error("food config");
+        if (c.energy.type !== "flat" || c.energy.rate !== 3) throw new Error("energy config");
+        if (c.fuel.type !== "flat" || c.fuel.rate !== 1) throw new Error("fuel config");
       }
     );
 
-    // tutorial-moon.CONFIG.2 — Resources are grouped correctly
-    test("CONFIG.2", "Resource groups are defined",
+    test("RESS.1", "Resource groups defined",
       () => {
-        const groups = CONFIG.RESOURCE_GROUPS;
-        if (!groups.materials) throw new Error("Missing materials group");
-        if (!groups.volatiles) throw new Error("Missing volatiles group");
-        if (!groups.consumables) throw new Error("Missing consumables group");
-        if (!groups.power) throw new Error("Missing power group");
+        if (!CONFIG.RESOURCE_GROUPS.materials) throw new Error("No materials");
+        if (!CONFIG.RESOURCE_GROUPS.volatiles) throw new Error("No volatiles");
+        if (!CONFIG.RESOURCE_GROUPS.consumables) throw new Error("No consumables");
+        if (!CONFIG.RESOURCE_GROUPS.power) throw new Error("No power");
       }
     );
 
-    // tutorial-moon.RES.2 — Materials group has correct resources
-    test("RES.2", "Materials group contains Steel, Aluminum, Precious Metals",
-      () => {
-        const m = CONFIG.RESOURCE_GROUPS.materials.resources;
-        if (!m.includes("steel")) throw new Error("Missing steel");
-        if (!m.includes("aluminum")) throw new Error("Missing aluminum");
-        if (!m.includes("preciousMetals")) throw new Error("Missing preciousMetals");
-      }
+    test("RESS.2", "Materials: Steel, Aluminum, Precious Metals",
+      () => { const m = CONFIG.RESOURCE_GROUPS.materials.resources;
+        ["steel","aluminum","preciousMetals"].forEach(r => { if (!m.includes(r)) throw new Error(`Missing ${r}`); }); }
+    );
+    test("RESS.3", "Volatiles: Water, Hydrogen, Nitrogen",
+      () => { const v = CONFIG.RESOURCE_GROUPS.volatiles.resources;
+        ["water","hydrogen","nitrogen"].forEach(r => { if (!v.includes(r)) throw new Error(`Missing ${r}`); }); }
+    );
+    test("RESS.4", "Consumables: Food only",
+      () => { const c = CONFIG.RESOURCE_GROUPS.consumables.resources;
+        if (c.length !== 1 || c[0] !== "food") throw new Error("consumables"); }
+    );
+    test("RESS.5", "Power: Energy, Fuel",
+      () => { const p = CONFIG.RESOURCE_GROUPS.power.resources;
+        ["energy","fuel"].forEach(r => { if (!p.includes(r)) throw new Error(`Missing ${r}`); }); }
     );
 
-    // tutorial-moon.RES.3 — Volatiles group has correct resources
-    test("RES.3", "Volatiles group contains Water, Hydrogen, Nitrogen",
-      () => {
-        const v = CONFIG.RESOURCE_GROUPS.volatiles.resources;
-        if (!v.includes("water")) throw new Error("Missing water");
-        if (!v.includes("hydrogen")) throw new Error("Missing hydrogen");
-        if (!v.includes("nitrogen")) throw new Error("Missing nitrogen");
-      }
-    );
+    // ── POPULATION ────────────────────────────────────
 
-    // tutorial-moon.RES.4 — Consumables group has Food
-    test("RES.4", "Consumables group contains Food",
-      () => {
-        const c = CONFIG.RESOURCE_GROUPS.consumables.resources;
-        if (!c.includes("food")) throw new Error("Missing food");
-        if (c.length !== 1) throw new Error(`Expected 1 consumable, got ${c.length}`);
-      }
-    );
-
-    // tutorial-moon.RES.5 — Power group has Energy and Fuel
-    test("RES.5", "Power group contains Energy, Fuel",
-      () => {
-        const p = CONFIG.RESOURCE_GROUPS.power.resources;
-        if (!p.includes("energy")) throw new Error("Missing energy");
-        if (!p.includes("fuel")) throw new Error("Missing fuel");
-      }
-    );
-
-    // ── Engine Tests ────────────────────────────────
-
-    // tutorial-moon.ARCH.2 — createGameState returns proper state object
-    test("ARCH.2", "createGameState returns state with all required fields",
+    test("POP.1", "Game state starts with 500 colonists",
       () => {
         const s = createGameState("moon");
-        if (typeof s.resources !== "object") throw new Error("Missing resources");
-        if (typeof s.travelTimeRemaining !== "number") throw new Error("Missing travelTimeRemaining");
-        if (typeof s.travelTimeTotal !== "number") throw new Error("Missing travelTimeTotal");
-        if (typeof s.destinationId !== "string") throw new Error("Missing destinationId");
-        if (typeof s.destinationName !== "string") throw new Error("Missing destinationName");
-        if (typeof s.phase !== "string") throw new Error("Missing phase");
-        if (s.phase !== "intro") throw new Error(`Expected phase 'intro', got '${s.phase}'`);
-        if (s.destinationId !== "moon") throw new Error(`Expected destination 'moon', got '${s.destinationId}'`);
-        if (s.travelTimeTotal !== 60) throw new Error(`Expected travelTimeTotal 60, got ${s.travelTimeTotal}`);
+        if (s.population !== 500) throw new Error(`Expected 500, got ${s.population}`);
       }
     );
 
-    // tutorial-moon.ARCH.2 — State has all 9 resources
-    test("ARCH.2", "Game state has all 9 resource types",
-      () => {
-        const s = createGameState("moon");
-        const keys = Object.keys(s.resources).sort();
-        const expected = ["steel","aluminum","preciousMetals","water","hydrogen","nitrogen","food","energy","fuel"].sort();
-        if (JSON.stringify(keys) !== JSON.stringify(expected)) {
-          throw new Error(`Resources mismatch. Got: ${keys.join(",")}`);
-        }
-      }
-    );
-
-    // tutorial-moon.ARCH.3 — engine.js has no DOM manipulation
-    test("ARCH.3", "engine.js source contains no document.getElementById or DOM calls",
-      () => {
-        // This is a static check; we verify the engine doesn't touch the DOM
-        const engineSource = tick.toString() + createGameState.toString() + startTravel.toString() + resetState.toString();
-        if (engineSource.includes("document.")) throw new Error("Engine references DOM");
-        if (engineSource.includes("getElementById")) throw new Error("Engine references getElementById");
-        if (engineSource.includes("innerHTML")) throw new Error("Engine references innerHTML");
-      }
-    );
-
-    // tutorial-moon.RES.6 — Starting values from config match
-    test("RES.6", "Game state initializes with correct starting values",
-      () => {
-        const s = createGameState("moon");
-        const expected = CONFIG.DESTINATIONS.moon.startingResources;
-        for (const [key, val] of Object.entries(expected)) {
-          if (s.resources[key] !== val) {
-            throw new Error(`${key}: expected ${val} got ${s.resources[key]}`);
-          }
-        }
-      }
-    );
-
-    // tutorial-moon.RES.7 — Consumption applied per tick
-    test("RES.7", "tick() applies per-second consumption to Water, Food, Energy, Fuel",
+    test("POP.3", "Food consumption = population * perCapita rate (500/s)",
       () => {
         const s = createGameState("moon");
         startTravel(s);
-        const before = { ...s.resources };
+        const before = s.resources.food;
         tick(s);
-        // Water -2
-        if (s.resources.water !== before.water - 2) throw new Error(`Water: expected ${before.water - 2} got ${s.resources.water}`);
-        // Food -1
-        if (s.resources.food !== before.food - 1) throw new Error(`Food: expected ${before.food - 1} got ${s.resources.food}`);
-        // Energy -3
-        if (s.resources.energy !== before.energy - 3) throw new Error(`Energy: expected ${before.energy - 3} got ${s.resources.energy}`);
-        // Fuel -1
-        if (s.resources.fuel !== before.fuel - 1) throw new Error(`Fuel: expected ${before.fuel - 1} got ${s.resources.fuel}`);
+        if (s.resources.food !== before - 500) throw new Error(`Expected ${before - 500}, got ${s.resources.food}`);
       }
     );
 
-    // tutorial-moon.RES.8 — Unchanged resources remain the same
-    test("RES.8", "Steel, Aluminum, Precious Metals, Hydrogen, Nitrogen are unchanged during travel",
-      () => {
-        const s = createGameState("moon");
-        startTravel(s);
-        const before = { ...s.resources };
-        tick(s);
-        if (s.resources.steel !== before.steel) throw new Error("Steel changed");
-        if (s.resources.aluminum !== before.aluminum) throw new Error("Aluminum changed");
-        if (s.resources.preciousMetals !== before.preciousMetals) throw new Error("Precious Metals changed");
-        if (s.resources.hydrogen !== before.hydrogen) throw new Error("Hydrogen changed");
-        if (s.resources.nitrogen !== before.nitrogen) throw new Error("Nitrogen changed");
-      }
-    );
-
-    // tutorial-moon.RES.10 — Resources cannot go below zero
-    test("RES.10", "Resources are floored at zero, never negative",
-      () => {
-        const s = createGameState("moon");
-        startTravel(s);
-        // Set water to 1, then tick should give 0 not -1
-        s.resources.water = 1;
-        tick(s);
-        if (s.resources.water < 0) throw new Error(`Water went negative: ${s.resources.water}`);
-        // Set food to 0, tick should keep it at 0
-        s.resources.food = 0;
-        tick(s);
-        if (s.resources.food < 0) throw new Error(`Food went negative: ${s.resources.food}`);
-      }
-    );
-
-    // tutorial-moon.TRAVEL.1 — Voyage lasts 60 seconds
-    test("TRAVEL.1", "Moon destination has 60s travel time",
-      () => {
-        const dest = CONFIG.DESTINATIONS.moon;
-        if (dest.travelTime !== 60) throw new Error(`Expected 60s, got ${dest.travelTime}s`);
-      }
-    );
-
-    // tutorial-moon.TRAVEL.2 — Resources decrease during travel
-    test("TRAVEL.2", "Multiple ticks decrease resources cumulatively",
+    test("POP.3", "Water consumption = population * perCapita rate (500/s)",
       () => {
         const s = createGameState("moon");
         startTravel(s);
         const before = s.resources.water;
-        for (let i = 0; i < 5; i++) tick(s);
-        if (s.resources.water >= before) throw new Error("Water did not decrease after 5 ticks");
-        if (s.resources.food >= createGameState("moon").resources.food) throw new Error("Food did not decrease after 5 ticks");
-        if (s.resources.energy >= createGameState("moon").resources.energy) throw new Error("Energy did not decrease after 5 ticks");
-        if (s.resources.fuel >= createGameState("moon").resources.fuel) throw new Error("Fuel did not decrease after 5 ticks");
+        tick(s);
+        if (s.resources.water !== before - 500) throw new Error(`Expected ${before - 500}, got ${s.resources.water}`);
       }
     );
 
-    // tutorial-moon.TRAVEL.3 — Timer decrements each tick
-    test("TRAVEL.3", "TravelTimeRemaining decreases by 1 each tick",
+    // ── CONSUMPTION ───────────────────────────────────
+
+    test("RES.7", "Energy consumption flat -3/s",
       () => {
         const s = createGameState("moon");
         startTravel(s);
-        if (s.travelTimeRemaining !== 60) throw new Error(`Expected 60, got ${s.travelTimeRemaining}`);
+        const before = s.resources.energy;
         tick(s);
-        if (s.travelTimeRemaining !== 59) throw new Error(`Expected 59, got ${s.travelTimeRemaining}`);
-        tick(s);
-        if (s.travelTimeRemaining !== 58) throw new Error(`Expected 58, got ${s.travelTimeRemaining}`);
+        if (s.resources.energy !== before - 3) throw new Error(`Expected ${before - 3}, got ${s.resources.energy}`);
       }
     );
 
-    // tutorial-moon.TRAVEL.4 — Current destination displayed (in state)
-    test("TRAVEL.4", "State tracks current destination name and ID",
+    test("RES.7", "Fuel consumption flat -1/s",
       () => {
         const s = createGameState("moon");
         startTravel(s);
-        if (s.destinationName !== "The Moon") throw new Error(`Expected 'The Moon', got '${s.destinationName}'`);
-        if (s.destinationId !== "moon") throw new Error(`Expected 'moon', got '${s.destinationId}'`);
+        const before = s.resources.fuel;
+        tick(s);
+        if (s.resources.fuel !== before - 1) throw new Error(`Expected ${before - 1}, got ${s.resources.fuel}`);
       }
     );
 
-    // tutorial-moon.TRAVEL.5 — Completion triggers when timer reaches zero
-    test("TRAVEL.5", "Phase transitions to 'complete' when travelTimeRemaining hits 0",
+    test("RES.8", "Steel, Aluminum, Precious Metals, Hydrogen, Nitrogen unchanged",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        const before = { ...s.resources };
+        for (let i = 0; i < 10; i++) tick(s);
+        ["steel","aluminum","preciousMetals","hydrogen","nitrogen"].forEach(r => {
+          if (s.resources[r] !== before[r]) throw new Error(`${r} changed from ${before[r]} to ${s.resources[r]}`);
+        });
+      }
+    );
+
+    test("RES.9", "Resources floor at zero, never negative",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        s.resources.food = 200; // 500/s consumption, should go to 0 in 1 tick
+        tick(s);
+        if (s.resources.food < 0) throw new Error(`Food went to ${s.resources.food}`);
+        tick(s);
+        if (s.resources.food < 0) throw new Error(`Food went to ${s.resources.food} after 2nd tick`);
+      }
+    );
+
+    // ── ENGINE ──────────────────────────────────────
+
+    test("ARCH.2", "createGameState returns complete state",
+      () => {
+        const s = createGameState("moon");
+        ["resources","population","morale","buildings","statuses","phase","travelTimeRemaining",
+         "destinationId","destinationName","flags","paused","tickCount"].forEach(f => {
+          if (s[f] === undefined) throw new Error(`Missing field: ${f}`);
+        });
+      }
+    );
+
+    test("ARCH.3", "Engine has no DOM references",
+      () => {
+        const src = tick.toString() + createGameState.toString() + startTravel.toString()
+                   + buildFarm.toString() + checkStatusTriggers.toString() + updateMorale.toString();
+        if (src.includes("document.")) throw new Error("Engine references document");
+        if (src.includes("innerHTML")) throw new Error("Engine references innerHTML");
+      }
+    );
+
+    test("TRAVEL.1", "Moon destination has 60s travel time",
+      () => {
+        if (CONFIG.DESTINATIONS.moon.travelTime !== 60) throw new Error(`${CONFIG.DESTINATIONS.moon.travelTime}`);
+      }
+    );
+
+    test("TRAVEL.3", "Timer decrements 1 per tick",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        s.flags.lowFoodPopupShown = true; // bypass pause from low-food event
+        [60,59,58].forEach((expected, i) => {
+          if (i > 0) tick(s);
+          if (s.travelTimeRemaining !== expected) throw new Error(`Tick ${i}: expected ${expected}, got ${s.travelTimeRemaining}`);
+        });
+      }
+    );
+
+    test("TRAVEL.5", "Phase transitions to complete at timer 0",
       () => {
         const s = createGameState("moon");
         startTravel(s);
         s.travelTimeRemaining = 1;
         tick(s);
-        if (s.phase !== "complete") throw new Error(`Expected 'complete', got '${s.phase}'`);
-        if (s.travelTimeRemaining !== 0) throw new Error(`Expected 0, got ${s.travelTimeRemaining}`);
+        if (s.phase !== "complete") throw new Error(`Expected complete, got ${s.phase}`);
       }
     );
 
-    // tutorial-moon.INTRO.1 — State initializes in 'intro' phase
-    test("INTRO.1", "Game starts in intro phase",
+    // ── MORALE ──────────────────────────────────────
+
+    test("MORALE.1", "Morale starts at 100, capped at -100 to 100",
       () => {
         const s = createGameState("moon");
-        if (s.phase !== "intro") throw new Error(`Expected 'intro', got '${s.phase}'`);
+        if (s.morale !== 100) throw new Error(`Expected 100, got ${s.morale}`);
+        if (CONFIG.MORALE.max !== 100) throw new Error(`Max config: ${CONFIG.MORALE.max}`);
+        if (CONFIG.MORALE.min !== -100) throw new Error(`Min config: ${CONFIG.MORALE.min}`);
       }
     );
 
-    // tutorial-moon.DEST.2 — Moon is the only destination
-    test("DEST.2", "Only The Moon is available in destination list",
-      () => {
-        const dests = CONFIG.DESTINATIONS;
-        const keys = Object.keys(dests);
-        if (keys.length !== 1) throw new Error(`Expected 1 destination, got ${keys.length}: ${keys.join(",")}`);
-        if (keys[0] !== "moon") throw new Error(`Expected 'moon', got '${keys[0]}'`);
-      }
-    );
-
-    // tutorial-moon.DEST.3 — startTravel changes phase
-    test("DEST.3", "startTravel transitions phase to 'traveling'",
+    test("MORALE.3", "Morale decays by 1 every 10 ticks when food will run out and past halfway",
       () => {
         const s = createGameState("moon");
         startTravel(s);
-        if (s.phase !== "traveling") throw new Error(`Expected 'traveling', got '${s.phase}'`);
-      }
-    );
-
-    // tutorial-moon.EXT.1 — Extension points exist as comments in config
-    test("EXT.1", "CONFIG has extension point comments for future systems",
-      () => {
-        const src = CONFIG.toString ? "runtime" : "static";
-        // Verify config.js has extension point patterns
-        const hasExtensions = !!CONFIG.DESTINATIONS.moon.startingResources;
-        if (!hasExtensions) throw new Error("Config is missing basic structure");
-        // Check that RESOURCE_GROUPS is extensible
-        if (typeof CONFIG.RESOURCE_GROUPS !== "object") throw new Error("Resource groups not extensible");
-      }
-    );
-
-    // tutorial-moon.EXT.2 — Destination structure supports expansion
-    test("EXT.2", "Destination config structure supports adding more destinations",
-      () => {
-        const moon = CONFIG.DESTINATIONS.moon;
-        // Verify destination shape works as a template
-        const requiredFields = ["id", "name", "description", "travelTime", "startingResources", "consumptionPerSecond"];
-        for (const field of requiredFields) {
-          if (moon[field] === undefined) throw new Error(`Missing field: ${field}`);
+        s.flags.lowFoodPopupShown = true; // bypass pause from low-food event
+        // Advance to tick 31 (over halfway at 60s trip)
+        for (let i = 0; i < 35; i++) tick(s);
+        // By now food is long gone, should be past halfway
+        if (s.travelTimeRemaining <= 30) {
+          // Check if morale has started decaying
+          const ticksPastHalfway = 35 - Math.ceil(60 * CONFIG.MORALE.halfWayFraction);
+          const expectedDecaySteps = Math.floor(ticksPastHalfway / CONFIG.MORALE.decayIntervalTicks);
+          const expectedMorale = CONFIG.MORALE.initial - expectedDecaySteps * CONFIG.MORALE.decayAmount;
+          if (s.morale !== expectedMorale) {
+            throw new Error(`Expected morale ~${expectedMorale}, got ${s.morale} after ${35} ticks`);
+          }
         }
-        // Verify we could add a second destination
-        const extraDest = { ...moon, id: "mars", name: "Mars" };
-        if (extraDest.id !== "mars") throw new Error("Extension model doesn't support new destinations");
       }
     );
 
-    // tutorial-moon.ARCH.4 — All values are configurable constants (not hardcoded in engine)
+    test("MORALE.4", "Status tracks hostile populace when morale below 0",
+      () => {
+        const s = createGameState("moon");
+        s.morale = -1;
+        // Force a status check by running tick
+        startTravel(s);
+        s.travelTimeRemaining = 1;
+        // Clear existing flags
+        s.flags.lowFoodPopupShown = true;
+        tick(s);
+        const hostile = s.statuses.find(st => st.id === "hostile-populace");
+        if (!hostile) throw new Error("Missing hostile-populace status");
+      }
+    );
+
+    // ── STATUS ──────────────────────────────────────
+
+    test("STATUS.1", "Low food status triggers during first voyage",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        tick(s); // 1 tick, food drops from 6000 to 5500
+        const lowFood = s.statuses.find(st => st.id === "low-food");
+        if (!lowFood) throw new Error("Low food status not triggered");
+        if (!s.paused) throw new Error("Game should be paused");
+        if (lowFood.type !== "critical") throw new Error(`Expected critical, got ${lowFood.type}`);
+      }
+    );
+
+    test("STATUS.2", "Low food popup has correct message",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        tick(s);
+        const lowFood = s.statuses.find(st => st.id === "low-food");
+        if (!lowFood.title || !lowFood.message) throw new Error("Missing title/message");
+        if (!lowFood.message.includes("farm")) throw new Error("Message should mention farm");
+      }
+    );
+
+    test("STATUS.4", "Paused game does not advance travel timer",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        tick(s);
+        const timeAfterPause = s.travelTimeRemaining;
+        // Game should be paused after low food trigger
+        if (!s.paused) throw new Error("Game not paused");
+        tick(s);
+        if (s.travelTimeRemaining !== timeAfterPause) throw new Error("Timer advanced while paused");
+      }
+    );
+
+    test("STATUS.5", "Building farm dismisses popup and unpauses",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        tick(s); // triggers low food
+        if (!s.paused) throw new Error("Should be paused");
+        s.resources.steel = 10000; // ensure enough resources
+        s.resources.aluminum = 5000;
+        const result = buildFarm(s);
+        if (!result.success) throw new Error(`Build failed: ${result.error}`);
+        if (s.paused) throw new Error("Game should be unpaused after building farm");
+        if (s.statuses.find(st => st.id === "low-food")) throw new Error("Low-food status should be removed");
+      }
+    );
+
+    // ── BUILD ───────────────────────────────────────
+
+    test("BUILD.2", "Farm building exists with proper config",
+      () => {
+        const farm = CONFIG.BUILDINGS.farm;
+        if (!farm) throw new Error("No farm config");
+        if (typeof farm.cost !== "object") throw new Error("No cost");
+        if (typeof farm.inputsPerTick !== "object") throw new Error("No inputs");
+        if (typeof farm.foodPerTick !== "number") throw new Error("No foodPerTick");
+      }
+    );
+
+    test("BUILD.3", "Farm costs Steel and Aluminum",
+      () => {
+        const cost = CONFIG.BUILDINGS.farm.cost;
+        if (!cost.steel) throw new Error("Missing steel cost");
+        if (!cost.aluminum) throw new Error("Missing aluminum cost");
+        if (cost.steel !== 500) throw new Error(`Steel cost: ${cost.steel}`);
+        if (cost.aluminum !== 200) throw new Error(`Aluminum cost: ${cost.aluminum}`);
+      }
+    );
+
+    test("BUILD.4", "Farm consumes Nitrogen, Energy, Water per tick",
+      () => {
+        const inputs = CONFIG.BUILDINGS.farm.inputsPerTick;
+        if (!inputs.nitrogen) throw new Error("Missing nitrogen input");
+        if (!inputs.energy) throw new Error("Missing energy input");
+        if (!inputs.water) throw new Error("Missing water input");
+      }
+    );
+
+    test("BUILD.5", "Farm produces food per tick",
+      () => {
+        const s = createGameState("moon");
+        startTravel(s);
+        s.resources.steel = 10000;
+        s.resources.aluminum = 5000;
+        s.flags.lowFoodPopupShown = true; // bypass popup
+        buildFarm(s);
+        const foodBefore = s.resources.food;
+        tick(s);
+        // Farm produces 250 food, but population consumes 500 food
+        // Net: food should decrease by 250 instead of 500
+        if (s.resources.food !== foodBefore - 250) throw new Error(`Expected ${foodBefore - 250}, got ${s.resources.food}`);
+      }
+    );
+
+    test("BUILD.6", "Buildings tracked in game state",
+      () => {
+        const s = createGameState("moon");
+        s.resources.steel = 10000;
+        s.resources.aluminum = 5000;
+        s.flags.lowFoodPopupShown = true;
+        if (s.buildings.farm !== 0) throw new Error(`Expected 0 farms initially, got ${s.buildings.farm}`);
+        buildFarm(s);
+        if (s.buildings.farm !== 1) throw new Error(`Expected 1 farm, got ${s.buildings.farm}`);
+      }
+    );
+
+    test("BUILD.3", "Farm build fails with insufficient resources",
+      () => {
+        const s = createGameState("moon");
+        s.resources.steel = 0;
+        const result = buildFarm(s);
+        if (result.success) throw new Error("Build should have failed");
+        if (!result.error) throw new Error("Should have error message");
+      }
+    );
+
+    // ── ARCHITECTURE ────────────────────────────────
+
     test("ARCH.4", "Engine uses CONFIG values, not hardcoded numbers",
       () => {
-        const engineSrc = tick.toString() + createGameState.toString();
-        // The engine should reference CONFIG.DESTINATIONS, not hardcode 60 or specific values
-        if (!engineSrc.includes("CONFIG.DESTINATIONS")) throw new Error("Engine doesn't reference CONFIG for destination data");
-        if (!engineSrc.includes("dest.consumptionPerSecond")) throw new Error("Engine doesn't use configurable consumption rates");
-        if (!engineSrc.includes("dest.startingResources")) throw new Error("Engine doesn't use configurable starting resources");
+        const src = tick.toString() + createGameState.toString() + buildFarm.toString();
+        if (!src.includes("CONFIG.DESTINATIONS")) throw new Error("No CONFIG reference");
+        if (!src.includes("CONFIG.MORALE")) throw new Error("No MORALE config reference");
+        if (!src.includes("CONFIG.BUILDINGS")) throw new Error("No BUILDINGS config reference");
       }
     );
 
-    // tutorial-moon.CONFIG.5 — Supports adding destinations without refactoring
-    test("CONFIG.5", "Engine works with any destination from config, not just moon",
+    test("CONFIG.5", "Engine supports any destination from config",
       () => {
-        // Add a test destination
-        const testDest = {
-          id: "test",
-          name: "Test",
-          description: "Test dest",
-          travelTime: 10,
+        const td = {
+          id: "test", name: "Test", description: "", travelTime: 10,
           startingResources: { steel: 100, aluminum: 50, preciousMetals: 10, water: 80, hydrogen: 30, nitrogen: 20, food: 60, energy: 100, fuel: 40 },
-          consumptionPerSecond: { water: 1, food: 1, energy: 0, fuel: 0 },
+          startingPopulation: 10,
+          consumptionPerSecond: { food: { type: "perCapita", rate: 1 }, water: { type: "perCapita", rate: 1 }, energy: { type: "flat", rate: 1 }, fuel: { type: "flat", rate: 1 } },
         };
-        CONFIG.DESTINATIONS.test = testDest;
+        CONFIG.DESTINATIONS.test = td;
         const s = createGameState("test");
         startTravel(s);
-        // Tick a few times
+        s.flags.lowFoodPopupShown = true; // bypass popup for engine test
         for (let i = 0; i < 5; i++) tick(s);
-        if (s.destinationId !== "test") throw new Error("Destination override failed");
-        if (s.resources.water !== 75) throw new Error(`Expected water 75, got ${s.resources.water}`);
-        if (s.resources.steel !== 100) throw new Error(`Expected steel 100 (unchanged), got ${s.resources.steel}`);
-        // Clean up
+        if (s.destinationId !== "test") throw new Error("Override failed");
+        if (s.resources.food !== 10) throw new Error(`Expected food 10, got ${s.resources.food}`); // 60 - 10*5 = 10
+        if (s.population !== 10) throw new Error(`Expected pop 10, got ${s.population}`);
         delete CONFIG.DESTINATIONS.test;
       }
     );

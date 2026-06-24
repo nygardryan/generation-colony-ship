@@ -6,7 +6,8 @@ feature:
 description: >
   Humanity's first colonization mission. The player manages a colony
   ship's resources during a 60-second voyage from Earth to the Moon.
-  This is the tutorial and core gameplay loop vertical slice.
+  Introduces population, morale, status events, and construction systems
+  as the tutorial vertical slice.
 
 components:
   INTRO:
@@ -16,8 +17,7 @@ components:
         Shows an introduction screen explaining the player controls a
         colony ship carrying humanity into space
       2: >
-        Provides a "Begin" or "Proceed" action to advance to destination
-        selection
+        Provides a "Begin" action to advance to destination selection
 
   DEST:
     description: Destination selection
@@ -25,54 +25,127 @@ components:
       1: >
         Presents a destination selection screen after the introduction
       2: >
-        Displays The Moon as the only available destination in this
-        initial version
+        Displays The Moon as the only available destination
       3: >
-        Selecting The Moon begins the voyage and transitions to the
-        travel phase
+        Selecting The Moon begins the voyage
 
   TRAVEL:
     description: Voyage travel mechanics
     requirements:
       1: >
-        The voyage from Earth to the Moon lasts approximately 60 seconds
+        The voyage lasts approximately 60 seconds
       2: >
-        Resources continuously decrease in real time during travel
+        Resources decrease in real time during travel
       3: >
         Displays remaining travel time counting down from 60 seconds
       4: >
-        Displays the current destination (The Moon) during travel
+        Displays the current destination during travel
       5: >
-        When the voyage timer reaches zero, transitions to the
-        completion screen
+        When the voyage timer reaches zero, transitions to completion
 
   RES:
     description: Resources and consumption
     requirements:
       1: >
-        Resources are displayed in four groups: Materials, Volatiles,
-        Consumables, and Power
+        Resources displayed in groups: Materials, Volatiles,
+        Consumables, Power
       2: >
-        Materials group contains Steel, Aluminum, Precious Metals
+        Materials: Steel, Aluminum, Precious Metals
       3: >
-        Volatiles group contains Water, Hydrogen, Nitrogen
+        Volatiles: Water, Hydrogen, Nitrogen
       4: >
-        Consumables group contains Food
+        Consumables: Food
       5: >
-        Power group contains Energy, Fuel
+        Power: Energy, Fuel
       6: >
-        Initial values are: Steel 10000, Aluminum 5000, Precious Metals
+        Starting values: Steel 10000, Aluminum 5000, Precious Metals
         1000, Water 8000, Hydrogen 3000, Nitrogen 2000, Food 6000,
         Energy 10000, Fuel 4000
       7: >
-        During travel, every second: Water decreases by 2, Food
-        decreases by 1, Energy decreases by 3, Fuel decreases by 1
+        Food and Water consumption scale with population. Each colonist
+        consumes 1 Food and 1 Water per tick. Energy decreases by 3
+        per tick. Fuel decreases by 1 per tick. All other resources
+        unchanged during the tutorial voyage.
       8: >
-        All other resources remain unchanged during the tutorial voyage
-      9: >
-        Resource values update in real time on the display during travel
-      10: >
         Resources can never go below zero
+      9: >
+        Resource values update in real time during travel
+
+  POP:
+    description: Population system
+    requirements:
+      1: >
+        The colony ship starts with 500 colonists
+      2: >
+        Population is displayed in a dedicated Population tab
+      3: >
+        Food and Water consumption is calculated as population
+        multiplied by per-capita rate
+
+  MORALE:
+    description: Morale system
+    requirements:
+      1: >
+        Morale is a tracked value with a cap of 100 and a floor of -100
+      2: >
+        Morale starts at 100
+      3: >
+        When the ship is over halfway to destination AND calculated food
+        will run out before arrival, morale decreases by 1 every 10 ticks
+      4: >
+        Morale below 0 indicates a hostile population
+
+  STATUS:
+    description: Status conditions and tutorial events
+    requirements:
+      1: >
+        The game detects when food supply is critically low during the
+        first voyage
+      2: >
+        When the low-food status first triggers, the game pauses with
+        a popup explaining Earth did not send enough supplies
+      3: >
+        The popup instructs the player to build a farm using the
+        Build tab
+      4: >
+        While paused, the travel timer does not advance
+      5: >
+        The player can close the popup and continue after building
+        the farm
+
+  BUILD:
+    description: Construction and building system
+    requirements:
+      1: >
+        A Build tab is available with construction options
+      2: >
+        A Farm building can be constructed
+      3: >
+        The Farm costs Steel and Aluminum to build
+      4: >
+        Once built, the Farm consumes Nitrogen, Energy, and Water
+      5: >
+        The Farm produces Food each tick
+      6: >
+        Buildings are tracked in the game state and persist for the
+        duration of the voyage
+
+  UI:
+    description: User interface tabs
+    requirements:
+      1: >
+        The travel screen has tab navigation for different panels:
+        Resources, Population, Status, Systems, Build
+      2: >
+        The Resources tab shows resource groups (default view)
+      3: >
+        The Population tab shows colonist count and morale
+      4: >
+        The Status tab shows active conditions and events
+      5: >
+        The Systems tab shows ship systems overview
+      6: >
+        The Build tab shows available constructions
 
   COMPLETE:
     description: Mission completion
@@ -80,38 +153,29 @@ components:
       1: >
         Displays a success screen when the Moon voyage completes
       2: >
-        Indicates that a Moon colony has been successfully established
+        Indicates that a Moon colony has been established
 
 constraints:
   ARCH:
     description: Architecture and code structure
     requirements:
       1: >
-        Codebase is structured for long-term expansion into a
-        galaxy-spanning colony management simulation
+        Codebase structured for long-term expansion into galaxy-spanning
+        colony management simulation
       2: >
-        Implements a central game state object containing resource
-        values, travel status, current destination, and remaining
-        travel time
+        Central game state object with all gameplay values
       3: >
-        Separates simulation logic from UI/rendering logic
+        Simulation logic separated from UI/rendering
       4: >
-        All starting values and consumption rates are stored as
-        configurable constants
+        All values stored as configurable constants
       5: >
-        The system supports adding additional destinations without
-        refactoring core architecture
+        Supports adding destinations without refactoring core
 
   EXT:
-    description: Extension points for future systems
+    description: Extension points
     requirements:
       1: >
-        Includes clear extension points in the codebase for:
-        Population and demographics, Occupations and labor systems,
-        Morale and societal stability, Political Points and governance,
-        Colonies and planetary management, Research and technology
-        progression, Random events and crises, Edicts and policy
-        decisions
+        Extension points for: Occupations, Political Points, Colonies,
+        Research, Random events, Edicts
       2: >
-        The architecture does not require refactoring the core
-        gameplay loop when adding future features
+        Core gameplay loop does not require refactoring for new features
