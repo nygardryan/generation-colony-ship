@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Generation Colony Ship</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app"></div>
+
+  <!-- tutorial-moon.CONFIG.1 — Configurable constants loaded first -->
+  <script src="config.js"></script>
+  <!-- tutorial-moon.ARCH.3 — Simulation engine (no DOM access) -->
+  <script src="engine.js"></script>
+  <!-- tutorial-moon.ARCH.3 — UI rendering (DOM manipulation) -->
+  <script src="ui.js"></script>
+  <script>
+    // tutorial-moon.ARCH.2 — Global game state instance
+    let state = createGameState("moon");
+    let travelInterval = null;
+
+    // tutorial-moon.INTRO.1 — Start with introduction
+    render(state);
+  </script>
+</body>
+</html>

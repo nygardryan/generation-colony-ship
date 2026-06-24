@@ -1,0 +1,117 @@
+feature:
+  name: tutorial-moon
+  product: generation-colony-ship
+  draft: false
+
+description: >
+  Humanity's first colonization mission. The player manages a colony
+  ship's resources during a 60-second voyage from Earth to the Moon.
+  This is the tutorial and core gameplay loop vertical slice.
+
+components:
+  INTRO:
+    description: Introduction and game setup
+    requirements:
+      1: >
+        Shows an introduction screen explaining the player controls a
+        colony ship carrying humanity into space
+      2: >
+        Provides a "Begin" or "Proceed" action to advance to destination
+        selection
+
+  DEST:
+    description: Destination selection
+    requirements:
+      1: >
+        Presents a destination selection screen after the introduction
+      2: >
+        Displays The Moon as the only available destination in this
+        initial version
+      3: >
+        Selecting The Moon begins the voyage and transitions to the
+        travel phase
+
+  TRAVEL:
+    description: Voyage travel mechanics
+    requirements:
+      1: >
+        The voyage from Earth to the Moon lasts approximately 60 seconds
+      2: >
+        Resources continuously decrease in real time during travel
+      3: >
+        Displays remaining travel time counting down from 60 seconds
+      4: >
+        Displays the current destination (The Moon) during travel
+      5: >
+        When the voyage timer reaches zero, transitions to the
+        completion screen
+
+  RES:
+    description: Resources and consumption
+    requirements:
+      1: >
+        Resources are displayed in four groups: Materials, Volatiles,
+        Consumables, and Power
+      2: >
+        Materials group contains Steel, Aluminum, Precious Metals
+      3: >
+        Volatiles group contains Water, Hydrogen, Nitrogen
+      4: >
+        Consumables group contains Food
+      5: >
+        Power group contains Energy, Fuel
+      6: >
+        Initial values are: Steel 10000, Aluminum 5000, Precious Metals
+        1000, Water 8000, Hydrogen 3000, Nitrogen 2000, Food 6000,
+        Energy 10000, Fuel 4000
+      7: >
+        During travel, every second: Water decreases by 2, Food
+        decreases by 1, Energy decreases by 3, Fuel decreases by 1
+      8: >
+        All other resources remain unchanged during the tutorial voyage
+      9: >
+        Resource values update in real time on the display during travel
+      10: >
+        Resources can never go below zero
+
+  COMPLETE:
+    description: Mission completion
+    requirements:
+      1: >
+        Displays a success screen when the Moon voyage completes
+      2: >
+        Indicates that a Moon colony has been successfully established
+
+constraints:
+  ARCH:
+    description: Architecture and code structure
+    requirements:
+      1: >
+        Codebase is structured for long-term expansion into a
+        galaxy-spanning colony management simulation
+      2: >
+        Implements a central game state object containing resource
+        values, travel status, current destination, and remaining
+        travel time
+      3: >
+        Separates simulation logic from UI/rendering logic
+      4: >
+        All starting values and consumption rates are stored as
+        configurable constants
+      5: >
+        The system supports adding additional destinations without
+        refactoring core architecture
+
+  EXT:
+    description: Extension points for future systems
+    requirements:
+      1: >
+        Includes clear extension points in the codebase for:
+        Population and demographics, Occupations and labor systems,
+        Morale and societal stability, Political Points and governance,
+        Colonies and planetary management, Research and technology
+        progression, Random events and crises, Edicts and policy
+        decisions
+      2: >
+        The architecture does not require refactoring the core
+        gameplay loop when adding future features
