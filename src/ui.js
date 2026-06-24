@@ -112,7 +112,7 @@ function renderTravel(state) {
       </div>
 
       <!-- Pause Overlay -->
-      ${state.paused && state.statuses.find(s => s.id === "low-food") ? renderPausePopup(state) : ""}
+      ${state.paused && state.statuses.find(s => s.id === "low-food") && !state.flags.popupDismissed ? renderPausePopup(state) : ""}
     </div>
   `;
 }
@@ -325,8 +325,10 @@ function renderPausePopup(state) {
   const lowFoodStatus = state.statuses.find(s => s.id === "low-food");
   if (!lowFoodStatus) return "";
 
+  const hasFarm = state.buildings.farm > 0;
+
   return `
-    <div class="pause-overlay" id="pause-overlay">
+    <div class="pause-overlay" id="pause-overlay" onclick="if(event.target===this) closePopup()">
       <div class="pause-popup">
         <div class="popup-icon">⚠️</div>
         <h2>${lowFoodStatus.title}</h2>
@@ -334,16 +336,15 @@ function renderPausePopup(state) {
         <div class="popup-advice">
           <p><strong>How to proceed:</strong></p>
           <ol>
-            <li>Open the <strong>Build</strong> tab</li>
+            <li>Close this message and open the <strong>Build</strong> tab</li>
             <li>Build a <strong>Farm</strong> (costs ${Object.entries(CONFIG.BUILDINGS.farm.cost).map(([k, v]) => `${CONFIG.RESOURCE_META[k].icon} ${v}`).join(', ')})</li>
             <li>The farm will produce food to sustain the colony</li>
           </ol>
         </div>
-        ${state.buildings.farm > 0 ? `
-          <button class="btn btn-primary" onclick="dismissPopup()">
-            Continue Mission
-          </button>
-        ` : ''}
+        <button class="btn btn-secondary" onclick="closePopup()">
+          ${hasFarm ? 'Continue Mission' : 'Close'}
+        </button>
+        ${hasFarm ? `<button class="btn btn-primary" onclick="closePopup(); handleBuildFarm()">Continue Mission</button>` : ''}
       </div>
     </div>
   `;
@@ -462,7 +463,13 @@ function handleBuildFarm() {
   }
 }
 
-// tutorial-moon.STATUS.5 — Dismiss popup
+// tutorial-moon.STATUS.5 — Close popup (dismiss overlay, stay paused until farm built)
+function closePopup() {
+  if (state) state.flags.popupDismissed = true;
+  document.getElementById("pause-overlay")?.remove();
+}
+
+// tutorial-moon.STATUS.5 — Dismiss popup (deprecated, use closePopup)
 function dismissPopup() {
   state.paused = false;
   state.statuses = state.statuses.filter(s => s.id !== "low-food");

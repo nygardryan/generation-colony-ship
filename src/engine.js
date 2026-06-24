@@ -37,6 +37,7 @@ function createGameState(destinationId) {
     // Track whether tutorial events have fired
     flags: {
       lowFoodPopupShown: false,
+      popupDismissed: false,
     },
 
     // Tick counter (for time-based conditions)
